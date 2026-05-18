@@ -8,24 +8,22 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.08" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.08" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Application\Commands\" />
-    <Folder Include="Application\DTOs\" />
     <Folder Include="Application\Queries\" />
-    <Folder Include="Common\Helpers\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Domain\Entities\" />
-    <Folder Include="Infrastructure\Data\" />
     <Folder Include="Infrastructure\Repositories\" />
   </ItemGroup>
 
