@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/Gateway/">
+    <Project Path="OcelotGateways/OcelotGateways.csproj" />
+  </Folder>
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/IdentityService/">
+    <Project Path="IdentityService/IdentityService.csproj" />
+  </Folder>
+  <Folder Name="/Services/NotificationService/">
+    <Project Path="NotificationServices/NotificationServices.csproj" />
+  </Folder>
+  <Folder Name="/Services/PricingService/">
+    <Project Path="PricingServices/PricingServices.csproj" />
+  </Folder>
+  <Folder Name="/Services/ShipmentService/">
+    <Project Path="ShipmentService/ShipmentService.csproj" />
+  </Folder>
+  <Folder Name="/Services/TrackingService/">
+    <Project Path="TrackingServices/TrackingServices.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="SharedKernel/SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/SwiftHaul/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+</Solution>
