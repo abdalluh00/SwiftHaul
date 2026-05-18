@@ -1,11 +1,8 @@
 using IdentityService.Common.Helpers;
 using IdentityService.Infrastructure.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
-using System.Text;
+using SharedKernel.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,26 +12,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// JWT
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"]!;
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(secretKey))
-        };
-    });
-
+// Jwt setup using the shared extension method for cleaner code and better separation of concerns
+builder.Services.AddSharedJwt(builder.Configuration);
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
