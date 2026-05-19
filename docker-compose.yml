@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+
+  # ── Infrastructure ──
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "SwiftHaul@2025"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  # ── Services ──
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: IdentityService/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Identity;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
+      - JwtSettings__Issuer=SwiftHaul
+      - JwtSettings__Audience=SwiftHaul
+      - JwtSettings__ExpiryInDays=7
+    depends_on:
+      - sqlserver
+
+  shipment-service:
+    build:
+      context: .
+      dockerfile: ShipmentService/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Shipment;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
+      - JwtSettings__Issuer=SwiftHaul
+      - JwtSettings__Audience=SwiftHaul
+    depends_on:
+      - sqlserver
+
+  tracking-service:
+    build:
+      context: .
+      dockerfile: TrackingServices/Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Tracking;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
+      - JwtSettings__Issuer=SwiftHaul
+      - JwtSettings__Audience=SwiftHaul
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    depends_on:
+      - sqlserver
+      - rabbitmq
+
+  pricing-service:
+    build:
+      context: .
+      dockerfile: PricingServices/Dockerfile
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Pricing;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
+      - JwtSettings__Issuer=SwiftHaul
+      - JwtSettings__Audience=SwiftHaul
+      - PricingRules__BasePricePerKg=5.0
+      - PricingRules__SameCityMultiplier=1.0
+      - PricingRules__NearCityMultiplier=1.5
+      - PricingRules__FarCityMultiplier=2.5
+    depends_on:
+      - sqlserver
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: NotificationServices/Dockerfile
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Notifications;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    depends_on:
+      - sqlserver
+      - rabbitmq
+
+  # ── Gateway ──
+
+  gateway:
+    build:
+      context: .
+      dockerfile: OcelotGateways/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
+      - JwtSettings__Issuer=SwiftHaul
+      - JwtSettings__Audience=SwiftHaul
+    depends_on:
+      - identity-service
+      - shipment-service
+      - tracking-service
+      - pricing-service
+      - notification-service
+
+volumes:
+  sqlserver_data:

@@ -3,8 +3,7 @@ using Microsoft.OpenApi;
 using SharedKernel.Auth;
 using TrackingServices.Common;
 using TrackingServices.Infrastructure.Data;
-using Swashbuckle.AspNetCore.SwaggerUI;
-
+using MassTransit;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -51,6 +50,24 @@ builder.Services.AddOpenApi(options =>
         document.Security.Add(requirement);
 
         return Task.CompletedTask;
+    });
+});
+
+
+// Configure MassTransit with RabbitMQ natively
+builder.Services.AddMassTransit(x =>
+{
+    // Tells MassTransit to use RabbitMQ as the message broker
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        // Connects to your running Docker container on localhost
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
 

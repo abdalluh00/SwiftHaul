@@ -1,7 +1,16 @@
+using Microsoft.EntityFrameworkCore;
+using NotificationServices.Consumers;
+using NotificationServices.Infrastructure.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration
+        .GetConnectionString("DefaultConnection")));
 
+// Register the background consumer
+builder.Services.AddHostedService<TrackingEventConsumer>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
