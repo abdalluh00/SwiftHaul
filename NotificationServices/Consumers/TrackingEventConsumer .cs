@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NotificationServices.Consumers
 {
@@ -34,7 +35,28 @@ namespace NotificationServices.Consumers
                 Password = rabbitConfig["Password"]!
             };
 
-            _connection = await factory.CreateConnectionAsync(stoppingToken);
+            IConnection? connection = null;
+            var retries = 10;
+
+            while(retries > 0)
+            {
+                try
+                {
+                    connection = await factory.CreateConnectionAsync(stoppingToken);
+                    Console.WriteLine("✅ NotificationService connected to RabbitMQ.");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    retries--;
+                    Console.WriteLine($"⚠️ RabbitMQ not ready, retrying... ({retries} left). Error: {ex.Message}");
+                    await Task.Delay(3000, stoppingToken);
+                }
+            };
+            
+            if (connection is null)
+                throw new Exception("❌ Could not connect to RabbitMQ after multiple retries.");
+            _connection = connection;
             _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
             // Declare the same queue TrackingService publishes to

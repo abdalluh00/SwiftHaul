@@ -23,8 +23,26 @@ namespace TrackingServices.Common
                 Password = rabbitConfig["Password"]!
             };
 
-            _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-            _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+            var retries = 10;
+            while(retries > 0)
+            {
+                try
+                {
+                    _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
+                    _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+                    Console.WriteLine("✅ RabbitMQ connected successfully.");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    retries--;
+                    Console.WriteLine($"⚠️ RabbitMQ not ready, retrying... ({retries} left). Error: {ex.Message}");
+                    Thread.Sleep(3000);
+                }
+            };
+
+            if (_connection is null || _channel is null)
+                throw new Exception("❌ Could not connect to RabbitMQ after multiple retries.");
         }
 
         public async Task PublishAsync<T>(string queueName, T message)

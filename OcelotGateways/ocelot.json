@@ -1,7 +1,5 @@
 {
   "Routes": [
-
-    // Identity Service
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",
@@ -14,8 +12,19 @@
       "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
-
-    // Shipment Service
+    {
+      "DownstreamPathTemplate": "/api/shipment/track/{trackingNumber}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "shipment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/shipment/track/{trackingNumber}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ],
+      "Priority": 2
+    },
     {
       "DownstreamPathTemplate": "/api/shipment/{everything}",
       "DownstreamScheme": "http",
@@ -26,13 +35,12 @@
         }
       ],
       "UpstreamPathTemplate": "/api/shipment/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
-      }
+      },
+      "Priority": 1
     },
-
-    // Tracking Service
     {
       "DownstreamPathTemplate": "/api/tracking/{everything}",
       "DownstreamScheme": "http",
@@ -43,13 +51,23 @@
         }
       ],
       "UpstreamPathTemplate": "/api/tracking/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
     },
-
-    // Pricing Service
+    {
+      "DownstreamPathTemplate": "/api/pricing/estimate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "pricing-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/pricing/estimate",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ]
+    },
     {
       "DownstreamPathTemplate": "/api/pricing/{everything}",
       "DownstreamScheme": "http",
@@ -60,12 +78,11 @@
         }
       ],
       "UpstreamPathTemplate": "/api/pricing/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
     }
-
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5000"

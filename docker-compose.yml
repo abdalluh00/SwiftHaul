@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
 
@@ -7,7 +6,7 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "SwiftHaul@2025"
+      SA_PASSWORD: "Sa123456"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
@@ -22,10 +21,17 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   # ── Services ──
 
   identity-service:
+    restart: on-failure
     build:
       context: .
       dockerfile: IdentityService/Dockerfile
@@ -33,7 +39,7 @@ services:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Identity;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Identity;User Id=sa;Password=Sa123456;TrustServerCertificate=True;Integrated Security=False;
       - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
       - JwtSettings__Issuer=SwiftHaul
       - JwtSettings__Audience=SwiftHaul
@@ -42,6 +48,7 @@ services:
       - sqlserver
 
   shipment-service:
+    restart: on-failure
     build:
       context: .
       dockerfile: ShipmentService/Dockerfile
@@ -49,7 +56,7 @@ services:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Shipment;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Shipment;User Id=sa;Password=Sa123456;TrustServerCertificate=True
       - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
       - JwtSettings__Issuer=SwiftHaul
       - JwtSettings__Audience=SwiftHaul
@@ -57,6 +64,7 @@ services:
       - sqlserver
 
   tracking-service:
+    restart: on-failure
     build:
       context: .
       dockerfile: TrackingServices/Dockerfile
@@ -64,7 +72,7 @@ services:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Tracking;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Tracking;User Id=sa;Password=Sa123456;TrustServerCertificate=True
       - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
       - JwtSettings__Issuer=SwiftHaul
       - JwtSettings__Audience=SwiftHaul
@@ -72,10 +80,12 @@ services:
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
     depends_on:
-      - sqlserver
-      - rabbitmq
-
+     sqlserver:
+      condition: service_started
+     rabbitmq:
+      condition: service_healthy
   pricing-service:
+    restart: on-failure
     build:
       context: .
       dockerfile: PricingServices/Dockerfile
@@ -83,7 +93,7 @@ services:
       - "5004:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Pricing;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Pricing;User Id=sa;Password=Sa123456;TrustServerCertificate=True
       - JwtSettings__SecretKey=SwiftHaul_SuperSecret_Key_2025_MustBe32Chars!
       - JwtSettings__Issuer=SwiftHaul
       - JwtSettings__Audience=SwiftHaul
@@ -95,6 +105,7 @@ services:
       - sqlserver
 
   notification-service:
+    restart: on-failure
     build:
       context: .
       dockerfile: NotificationServices/Dockerfile
@@ -102,17 +113,20 @@ services:
       - "5005:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Notifications;User Id=sa;Password=SwiftHaul@2025;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SwiftHaul_Notifications;User Id=sa;Password=Sa123456;TrustServerCertificate=True
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
     depends_on:
-      - sqlserver
-      - rabbitmq
+      sqlserver:
+       condition: service_started
+      rabbitmq:
+       condition: service_healthy
 
   # ── Gateway ──
 
   gateway:
+    restart: on-failure
     build:
       context: .
       dockerfile: OcelotGateways/Dockerfile
