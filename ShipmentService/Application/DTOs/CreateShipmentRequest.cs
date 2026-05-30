@@ -34,4 +34,13 @@
         string City,
         DateTime OccurredAt
     );
+
+    public record TrackShipmentResponse(
+        string TrackingNumber,
+        string CurrentStatus,
+        string PickupCity,
+        string DeliveryCity,
+        DateTime? EstimatedDelivery,
+        List<ShipmentHistoryResponse> History
+    );
 }

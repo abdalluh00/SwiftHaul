@@ -11,6 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Register the background consumer
 builder.Services.AddHostedService<TrackingEventConsumer>();
+builder.Services.AddHostedService<ShipmentCreatedConsumer>();
 builder.Services.Configure<HostOptions>(options =>
 {
     options.BackgroundServiceExceptionBehavior =

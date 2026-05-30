@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
-using SharedKernel.Auth;
+using SharedKernel.Extensions;
+using ShipmentService.Common;
 using ShipmentService.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration
         .GetConnectionString("DefaultConnection")));
-
+builder.Services.AddSingleton<RabbitMQPublisher>();
+builder.Services.AddCQRS(typeof(Program).Assembly);
 builder.Services.AddSharedJwt(builder.Configuration);
 builder.Services.AddControllers();
 
@@ -71,7 +73,22 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var retries = 5;
+    while (retries > 0)
+    {
+        try
+        {
+            db.Database.Migrate();
+            Console.WriteLine("✅ Database migrated successfully.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            Console.WriteLine($"⚠️ Migration failed, retrying... ({retries} left). Error: {ex.Message}");
+            Thread.Sleep(3000);
+        }
+    }
 }
 app.Run();
 
